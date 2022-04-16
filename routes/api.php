@@ -1,0 +1,83 @@
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| is assigned the "api" middleware group. Enjoy building your API!
+|
+*/
+
+Route::group(['prefix' => 'auth'], function () {
+  Route::post('login', 'AuthController@login');
+  Route::post('register', 'AuthController@register');
+
+  Route::group(['middleware' => 'auth:sanctum'], function() {
+    Route::post('logout', 'AuthController@logout');
+    Route::get('me', 'AuthController@user');
+  });
+});
+
+// all routes are authenticated by sanctum
+Route::group(['middleware' => ['auth:sanctum']], function () {
+  // if authenticated, check user is clear to process (active and unlocked)
+  Route::group(['middleware' => ['check']], function () {
+
+    Route::group(['prefix' => 'users'], function () {
+      Route::get('/', ['uses' => 'UserController@all']);
+      Route::get('/{id}', ['uses' => 'UserController@get']);
+
+      /** 'can' middleware for authorization of database insert, update and delete operations
+       * 'can' middleware with ability name parameter passes to Authorize middleware class
+       */
+      Route::post('/', ['middleware' => ['can:create_user'], 'uses' => 'UserController@add']);
+      Route::put('/{id}', ['middleware' => ['can:update_user'], 'uses' => 'UserController@put']);
+      Route::delete('/{id}', ['middleware' => ['can:delete_user'], 'uses' => 'UserController@remove']);
+    });
+
+    Route::group(['prefix' => 'categories'], function () {
+      Route::get('/', ['middleware' => ['can:read_category'], 'uses' => 'CategoryController@all']);
+      Route::get('/{id}', ['middleware' => ['can:read_category'], 'uses' => 'CategoryController@get']);
+
+      Route::post('/', ['middleware' => ['can:create_category'], 'uses' => 'CategoryController@add']);
+      Route::put('/{id}', ['middleware' => ['can:update_category'], 'uses' => 'CategoryController@put']);
+      Route::delete('/{id}', ['middleware' => ['can:delete_category'], 'uses' => 'CategoryController@remove']);
+    });
+
+    Route::group(['prefix' => 'units'], function () {
+      Route::get('/', ['middleware' => ['can:read_unit'], 'uses' => 'UnitController@all']);
+      Route::get('/{id}', ['middleware' => ['can:read_unit'], 'uses' => 'UnitController@get']);
+
+      Route::post('/', ['middleware' => ['can:create_unit'], 'uses' => 'UnitController@add']);
+      Route::put('/{id}', ['middleware' => ['can:update_unit'], 'uses' => 'UnitController@put']);
+      Route::delete('/{id}', ['middleware' => ['can:delete_unit'], 'uses' => 'UnitController@remove']);
+    });
+
+    Route::group(['prefix' => 'items'], function () {
+      Route::get('/', ['middleware' => ['can:read_item'], 'uses' => 'ItemController@all']);
+      Route::get('/{id}', ['middleware' => ['can:read_item'], 'uses' => 'ItemController@get']);
+
+      Route::post('/', ['middleware' => ['can:create_item'], 'uses' => 'ItemController@add']);
+      Route::put('/{id}', ['middleware' => ['can:update_item'], 'uses' => 'ItemController@put']);
+      Route::delete('/{id}', ['middleware' => ['can:delete_item'], 'uses' => 'ItemController@remove']);
+    });
+
+    Route::group(['prefix' => 'patients'], function () {
+      Route::get('/', ['middleware' => ['can:read_patient'], 'uses' => 'PatientController@all']);
+      Route::get('/{id}', ['middleware' => ['can:read_patient'], 'uses' => 'PatientController@get']);
+
+      Route::post('/', ['middleware' => ['can:create_patient'], 'uses' => 'PatientController@add']);
+      Route::put('/{id}', ['middleware' => ['can:update_patient'], 'uses' => 'PatientController@put']);
+      Route::delete('/{id}', ['middleware' => ['can:delete_patient'], 'uses' => 'PatientController@remove']);
+    });
+
+    Route::get('/options/{object}', ['middleware' => ['auth:sanctum'], 'uses' => 'OptionController@get']);
+
+  });
+});
