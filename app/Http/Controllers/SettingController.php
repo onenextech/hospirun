@@ -2,18 +2,21 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
-use App\Models\Unit;
+use App\Models\Setting;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Intervention\Image\Facades\Image;
 
-class UnitController extends Controller
+class SettingController extends Controller
 {
 
-    /** Get Unit List
+    /** Get Setting List
         * @OA\Get(
-        * path="/api/units",
-        * operationId="unitList",
-        * tags={"Unit"},
+        * path="/api/settings",
+        * operationId="settingList",
+        * tags={"Setting"},
         * summary="List",
         *     @OA\RequestBody(
         *         @OA\MediaType(
@@ -59,12 +62,9 @@ class UnitController extends Controller
             $sortOrder = "asc";
         }
 
-        // filters
-        $type = $request->input('type');
-
         $skip = ($page-1) * $perPage;
 
-        $records = Unit::where(function ($query) use($q) {
+        $records = Setting::where(function ($query) use($q) {
             if($q !== "") {
                 $query->where('name', 'like', "%{$q}%");
             }
@@ -73,14 +73,14 @@ class UnitController extends Controller
         ->skip($skip)->take($perPage)
         ->get();
 
-        $total = Unit::where(function ($query) use($q) {
+        $total = Setting::where(function ($query) use($q) {
             if($q !== "") {
                 $query->where('name', 'like', "%{$q}%");
             }
         })
         ->get()->count();
 
-        $data['units'] = $records;
+        $data['settings'] = $records;
         $data['total'] = $total;
 
         if(!count($data)){
@@ -89,11 +89,11 @@ class UnitController extends Controller
         return $this->response('done', $data);
     }
 
-    /** Get Unit
+    /** Get Setting
         * @OA\Get(
-        * path="/api/units/{id}",
-        * operationId="unitGet",
-        * tags={"Unit"},
+        * path="/api/settings/{id}",
+        * operationId="settingGet",
+        * tags={"Setting"},
         * summary="Get",
         *     @OA\Parameter(
         *       in="path",
@@ -109,25 +109,27 @@ class UnitController extends Controller
     */
     public function get($id)
     {
-        $data = Unit::find($id);
+        $data = Setting::find($id);
         if(is_null($data)) {
             return $this->response('not_found');
         }
         return $this->response('done', $data);
     }
 
-    /** Create Unit
+    /** Create Setting
         * @OA\Post(
-        * path="/api/units",
-        * operationId="unitCreate",
-        * tags={"Unit"},
+        * path="/api/settings",
+        * operationId="settingCreate",
+        * tags={"Setting"},
         * summary="Create",
         *     @OA\RequestBody(
         *         @OA\MediaType(
         *            mediaType="application/json",
         *            @OA\Schema(
-        *               required={"name"},
+        *               required={"name", "value"},
         *               @OA\Property(property="name", type="string"),
+        *               @OA\Property(property="value", type="string"),
+        *               @OA\Property(property="description", type="string"),
         *            ),
         *        ),
         *     ),
@@ -142,12 +144,13 @@ class UnitController extends Controller
         //validate incoming request
         $this->validate($request, [
             'name' => 'required|string|max:255',
+            'value' => 'required|string|max:255',
         ]);
 
         try {
-            $data = $request->only(['name', 'description']);
+            $data = $request->only(['name', 'value', 'description']);
             $data['created_by'] = Auth::user()->id; // track who is creating this
-            $result = Unit::insertGetId($data);
+            $result = Setting::insertGetId($data);
             $data = array('id'=> $result) + $data; //add generated id infront of response data array
         } catch (\Exception $e) {
             //return error message
@@ -158,11 +161,11 @@ class UnitController extends Controller
         return $this->response('created', $data);
     }
 
-    /** Update Unit
+    /** Update Setting
         * @OA\Put(
-        * path="/api/units/{id}",
-        * operationId="unitUpdate",
-        * tags={"Unit"},
+        * path="/api/settings/{id}",
+        * operationId="settingUpdate",
+        * tags={"Setting"},
         * summary="Update",
         *     @OA\Parameter(
         *       in="path",
@@ -175,6 +178,8 @@ class UnitController extends Controller
         *            mediaType="application/json",
         *            @OA\Schema(
         *               @OA\Property(property="name", type="string"),
+        *               @OA\Property(property="value", type="string"),
+        *               @OA\Property(property="description", type="string"),
         *            ),
         *        ),
         *     ),
@@ -188,15 +193,16 @@ class UnitController extends Controller
     {
         $this->validate($request, [
             'name' => 'string|max:255',
+            'value' => 'string|max:255',
         ]);
 
-        $newData = $request->only(['name', 'description']);
+        $newData = $request->only(['name', 'value', 'description']);
 
         DB::beginTransaction();
 
         try {
 
-            $data = Unit::find($id);
+            $data = Setting::find($id);
             if(is_null($data)) {
                 return $this->response('not_found');
             }
@@ -216,11 +222,11 @@ class UnitController extends Controller
         return $this->response('done', $data);
     }
 
-    /** Delete Unit
+    /** Delete Setting
         * @OA\Delete(
-        * path="/api/units/{id}",
-        * operationId="unitDelete",
-        * tags={"Unit"},
+        * path="/api/settings/{id}",
+        * operationId="settingDelete",
+        * tags={"Setting"},
         * summary="Delete",
         *     @OA\Parameter(
         *       in="path",
@@ -236,7 +242,7 @@ class UnitController extends Controller
     */
     public function remove($id)
     {
-        $data = Unit::find($id);
+        $data = Setting::find($id);
         if(is_null($data)) {
             return $this->response('not_found');
         }

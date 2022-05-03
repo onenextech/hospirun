@@ -201,7 +201,7 @@ class UserController extends Controller
                 $data['profile_image'] =  $imageName;
             }
             $data['password'] = bcrypt($data['password']);
-            $data['created_by'] = Auth::user()->name; // track who is creating this
+            $data['created_by'] = Auth::user()->id; // track who is creating this
             $result = User::insertGetId($data);
             $data = array('id'=> $result) + $data; //add generated id infront of response data array
             unset($data['password']); // remove password for responding created user data
@@ -288,7 +288,7 @@ class UserController extends Controller
             }
 
             $newData['updated_at'] = now()->toDateTimeString(); // track when updated
-            $newData['updated_by'] = Auth::user()->name;  // track who is updating this
+            $newData['updated_by'] = Auth::user()->id;  // track who is updating this
 
             if($request->password !== null) {
                 $newData['password'] = bcrypt($newData['password']);
@@ -333,7 +333,7 @@ class UserController extends Controller
             return $this->response('not_found');
         }
         try {
-            $data['deleted_by'] = Auth::user()->name; // track who is deleting this
+            $data['deleted_by'] = Auth::user()->id; // track who is deleting this
             $data->save(); // save before delete for tracking who is deleting
             $data->delete(); // soft delete
         }

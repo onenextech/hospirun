@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-class Patient extends BaseModel
+class BillItem extends BaseModel
 {
 
     /**
@@ -11,17 +11,14 @@ class Patient extends BaseModel
      * @var array
      */
     protected $fillable = [
-        'name',
-        'gender',
-        'date_of_birth',
-        'age',
-        'address',
-        'phone',
-        'blood_group',
-        'nrc_number',
-        'cpi_number',
-        'credit_balance',
-        'status',
+        'bill_id',
+        'item_id',
+        'item_name',
+        'unit_id',
+        'unit_name',
+        'charge',
+        'quantity',
+        'amount',
     ];
 
     /**
@@ -31,11 +28,15 @@ class Patient extends BaseModel
      */
     protected $hidden = [
         'created_at',
-        'updated_at',
         'deleted_at',
         'created_by',
-        'updated_by',
         'deleted_by',
     ];
 
+    public function item() {
+        return $this->hasOne(Item::class,'id','item_id');
+    }
+    public function unit() {
+        return $this->hasOne(Unit::class,'id','unit_id');
+    }
 }

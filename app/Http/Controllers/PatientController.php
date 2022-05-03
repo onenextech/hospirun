@@ -161,7 +161,7 @@ class PatientController extends Controller
 
         try {
             $data = $request->only(['name', 'gender', 'date_of_birth', 'age', 'address', 'phone', 'blood_group', 'nrc_number']);
-            $data['created_by'] = Auth::user()->name; // track who is creating this
+            $data['created_by'] = Auth::user()->id; // track who is creating this
             $result = Patient::insertGetId($data);
             $data = array('id'=> $result) + $data; //add generated id infront of response data array
         } catch (\Exception $e) {
@@ -228,7 +228,7 @@ class PatientController extends Controller
             }
 
             $newData['updated_at'] = now()->toDateTimeString(); // track when updated
-            $newData['updated_by'] = Auth::user()->name;  // track who is updating this
+            $newData['updated_by'] = Auth::user()->id;  // track who is updating this
 
             $data->update($newData);
             DB::commit();
@@ -267,7 +267,7 @@ class PatientController extends Controller
             return $this->response('not_found');
         }
         try {
-            $data['deleted_by'] = Auth::user()->name; // track who is deleting this
+            $data['deleted_by'] = Auth::user()->id; // track who is deleting this
             $data->save(); // save before delete for tracking who is deleting
             $data->delete(); // soft delete
         }

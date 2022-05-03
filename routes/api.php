@@ -29,6 +29,15 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   // if authenticated, check user is clear to process (active and unlocked)
   Route::group(['middleware' => ['check']], function () {
 
+    Route::group(['prefix' => 'settings'], function () {
+        Route::get('/', ['middleware' => ['can:read_setting'], 'uses' => 'SettingController@all']);
+        Route::get('/{id}', ['middleware' => ['can:read_setting'], 'uses' => 'SettingController@get']);
+
+        Route::post('/', ['middleware' => ['can:create_setting'], 'uses' => 'SettingController@add']);
+        Route::put('/{id}', ['middleware' => ['can:update_setting'], 'uses' => 'SettingController@put']);
+        Route::delete('/{id}', ['middleware' => ['can:delete_setting'], 'uses' => 'SettingController@remove']);
+    });
+
     Route::group(['prefix' => 'users'], function () {
       Route::get('/', ['uses' => 'UserController@all']);
       Route::get('/{id}', ['uses' => 'UserController@get']);
@@ -39,6 +48,15 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
       Route::post('/', ['middleware' => ['can:create_user'], 'uses' => 'UserController@add']);
       Route::put('/{id}', ['middleware' => ['can:update_user'], 'uses' => 'UserController@put']);
       Route::delete('/{id}', ['middleware' => ['can:delete_user'], 'uses' => 'UserController@remove']);
+    });
+
+    Route::group(['prefix' => 'patients'], function () {
+        Route::get('/', ['middleware' => ['can:read_patient'], 'uses' => 'PatientController@all']);
+        Route::get('/{id}', ['middleware' => ['can:read_patient'], 'uses' => 'PatientController@get']);
+
+        Route::post('/', ['middleware' => ['can:create_patient'], 'uses' => 'PatientController@add']);
+        Route::put('/{id}', ['middleware' => ['can:update_patient'], 'uses' => 'PatientController@put']);
+        Route::delete('/{id}', ['middleware' => ['can:delete_patient'], 'uses' => 'PatientController@remove']);
     });
 
     Route::group(['prefix' => 'categories'], function () {
@@ -68,14 +86,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
       Route::delete('/{id}', ['middleware' => ['can:delete_item'], 'uses' => 'ItemController@remove']);
     });
 
-    Route::group(['prefix' => 'patients'], function () {
-      Route::get('/', ['middleware' => ['can:read_patient'], 'uses' => 'PatientController@all']);
-      Route::get('/{id}', ['middleware' => ['can:read_patient'], 'uses' => 'PatientController@get']);
-
-      Route::post('/', ['middleware' => ['can:create_patient'], 'uses' => 'PatientController@add']);
-      Route::put('/{id}', ['middleware' => ['can:update_patient'], 'uses' => 'PatientController@put']);
-      Route::delete('/{id}', ['middleware' => ['can:delete_patient'], 'uses' => 'PatientController@remove']);
-    });
 
     Route::get('/options/{object}', ['middleware' => ['auth:sanctum'], 'uses' => 'OptionController@get']);
 
