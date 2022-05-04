@@ -39,7 +39,7 @@ class Bill extends BaseModel
     }
 
     public function bill_items() {
-        return $this->hasMany(BillItem::class,'sale_id','id')->with('item')->select(['id', 'sale_id', 'item_id', 'quantity', 'price', 'amount']);
+        return $this->hasMany(BillItem::class,'sale_id','id');
     }
 
     public function payment() {
