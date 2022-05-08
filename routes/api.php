@@ -87,6 +87,16 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     });
 
 
+    Route::group(['prefix' => 'bills'], function () {
+      Route::get('/', ['middleware' => ['can:read_bill'], 'uses' => 'BillController@all']);
+      Route::get('/{id}', ['middleware' => ['can:read_bill'], 'uses' => 'BillController@get']);
+
+      Route::post('/', ['middleware' => ['can:create_bill'], 'uses' => 'BillController@add']);
+      Route::put('/{id}', ['middleware' => ['can:update_bill'], 'uses' => 'BillController@put']);
+      Route::delete('/{id}', ['middleware' => ['can:delete_bill'], 'uses' => 'BillController@remove']);
+    });
+
+
     Route::get('/options/{object}', ['middleware' => ['auth:sanctum'], 'uses' => 'OptionController@get']);
 
   });

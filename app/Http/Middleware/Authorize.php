@@ -25,7 +25,8 @@ class Authorize
         // get all params except first two params
         $ability = array_slice(func_get_args(), 2)[0];
 
-        $abilityId = Ability::where('name', $ability)->first()->id;
+        //$abilityId = Ability::where('name', $ability)->first()->id;
+        $abilityId = Ability::where('name', $ability)->value('id');
         $roleId = Auth::user()->role_id;
 
         $abilityRole = AbilityRole::where('role_id', $roleId)->where('ability_id', $abilityId)->first();

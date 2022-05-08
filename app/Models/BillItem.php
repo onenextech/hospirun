@@ -33,9 +33,14 @@ class BillItem extends BaseModel
         'deleted_by',
     ];
 
+    public function bill() {
+        return $this->belongsTo(Bill::class);
+    }
+
     public function item() {
         return $this->hasOne(Item::class,'id','item_id');
     }
+
     public function unit() {
         return $this->hasOne(Unit::class,'id','unit_id');
     }

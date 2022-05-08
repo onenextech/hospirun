@@ -8,7 +8,7 @@ use App\Models\Payment;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class ItemController extends Controller
+class BillController extends Controller
 {
 
     /** Get Bill List
@@ -118,7 +118,7 @@ class ItemController extends Controller
         })
         ->where(function ($query) use($q) {
             if($q !== "") {
-                $query->where('name', 'like', "%{$q}%")
+                $query->where('remark', 'like', "%{$q}%")
                 ->orWhere('patient_address', 'like', "%{$q}%");
             }
         })
@@ -208,8 +208,9 @@ class ItemController extends Controller
             $data['created_by'] = Auth::user()->id; // track who is creating this
             $bill_id = Bill::insertGetId($data);
 
-            $data_items = $data['bill_items'];
+            $data_items = $request->input('bill_items');
             $bill_items = [];
+
             foreach ($data_items as $item) {
                 $item['bill_id'] = $bill_id;
                 $item['created_at'] = now()->toDateTimeString();
