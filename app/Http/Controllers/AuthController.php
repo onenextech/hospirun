@@ -103,11 +103,6 @@ class AuthController extends Controller
       }
       $userData = User::with('role.abilities')->find(Auth::user()->id)->only(['name', 'fullname', 'email', 'role_id', 'role', 'profile_image']);
 
-      //get s3 public url for profile_image
-      $file = 'profile_images/' . $userData['profile_image'];
-      $url = config('filesystems.disks.s3.url') . $file;
-      $userData['profile_image'] = $url;
-
       $result['token'] =  $authUser->createToken('DohEainPortal')->plainTextToken;
       $result['user_data'] = $userData;
       return $this->response('done', $result);

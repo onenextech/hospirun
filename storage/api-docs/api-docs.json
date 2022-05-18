@@ -116,6 +116,230 @@
                 }
             }
         },
+        "/api/bills": {
+            "get": {
+                "tags": [
+                    "Bill"
+                ],
+                "summary": "List",
+                "description": "Get Bill List",
+                "operationId": "billList",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "per_page",
+                                    "page",
+                                    "sort_by"
+                                ],
+                                "properties": {
+                                    "q": {
+                                        "type": "string"
+                                    },
+                                    "per_page": {
+                                        "type": "integer"
+                                    },
+                                    "page": {
+                                        "type": "integer"
+                                    },
+                                    "sort_by": {
+                                        "type": "string"
+                                    },
+                                    "sort_desc": {
+                                        "type": "boolean"
+                                    },
+                                    "bill_dates": {
+                                        "type": "object"
+                                    },
+                                    "patient_id": {
+                                        "type": "integer"
+                                    },
+                                    "status": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Bill"
+                ],
+                "summary": "Create",
+                "description": "Create Bill",
+                "operationId": "billCreate",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "date",
+                                    "patient_id",
+                                    "patient_name",
+                                    "patient_phone",
+                                    "total_amount",
+                                    "status",
+                                    "bill_items"
+                                ],
+                                "properties": {
+                                    "date": {
+                                        "type": "string"
+                                    },
+                                    "patient_id": {
+                                        "type": "integer"
+                                    },
+                                    "patient_name": {
+                                        "type": "string"
+                                    },
+                                    "patient_phone": {
+                                        "type": "string"
+                                    },
+                                    "patient_address": {
+                                        "type": "string"
+                                    },
+                                    "total_amount": {
+                                        "type": "number"
+                                    },
+                                    "remark": {
+                                        "type": "string"
+                                    },
+                                    "status": {
+                                        "type": "string"
+                                    },
+                                    "bill_items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/bills/{id}": {
+            "get": {
+                "tags": [
+                    "Bill"
+                ],
+                "summary": "Get",
+                "description": "Get Bill",
+                "operationId": "billGet",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Bill"
+                ],
+                "summary": "Update",
+                "description": "Update Bill",
+                "operationId": "billUpdate",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "date": {
+                                        "type": "string"
+                                    },
+                                    "patient_id": {
+                                        "type": "integer"
+                                    },
+                                    "patient_name": {
+                                        "type": "string"
+                                    },
+                                    "patient_phone": {
+                                        "type": "string"
+                                    },
+                                    "patient_address": {
+                                        "type": "string"
+                                    },
+                                    "total_amount": {
+                                        "type": "number"
+                                    },
+                                    "remark": {
+                                        "type": "string"
+                                    },
+                                    "status": {
+                                        "type": "string"
+                                    },
+                                    "bill_items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Bill"
+                ],
+                "summary": "Delete",
+                "description": "Delete Bill",
+                "operationId": "billDelete",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
         "/api/categories": {
             "get": {
                 "tags": [
@@ -694,6 +918,180 @@
                 "summary": "Delete",
                 "description": "Delete Patient",
                 "operationId": "patientDelete",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/settings": {
+            "get": {
+                "tags": [
+                    "Setting"
+                ],
+                "summary": "List",
+                "description": "Get Setting List",
+                "operationId": "settingList",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "per_page",
+                                    "page",
+                                    "sort_by"
+                                ],
+                                "properties": {
+                                    "q": {
+                                        "type": "string"
+                                    },
+                                    "per_page": {
+                                        "type": "integer"
+                                    },
+                                    "page": {
+                                        "type": "integer"
+                                    },
+                                    "sort_by": {
+                                        "type": "string"
+                                    },
+                                    "sort_desc": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Setting"
+                ],
+                "summary": "Create",
+                "description": "Create Setting",
+                "operationId": "settingCreate",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "value"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "value": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/settings/{id}": {
+            "get": {
+                "tags": [
+                    "Setting"
+                ],
+                "summary": "Get",
+                "description": "Get Setting",
+                "operationId": "settingGet",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Setting"
+                ],
+                "summary": "Update",
+                "description": "Update Setting",
+                "operationId": "settingUpdate",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "value": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Setting"
+                ],
+                "summary": "Delete",
+                "description": "Delete Setting",
+                "operationId": "settingDelete",
                 "parameters": [
                     {
                         "name": "id",

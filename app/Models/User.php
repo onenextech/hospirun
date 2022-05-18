@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -63,4 +64,15 @@ class User extends Authenticatable
     public function role() {
         return $this->hasOne(Role::class,'id','role_id')->select(['id', 'name']);
     }
+
+    public function getProfileImageAttribute($value)
+    {
+        //get s3 public url for profile_image
+        if ($value) {
+            $file = 'profile_images/' . $value;
+            return Storage::exists($file) ? config('app.url').Storage::url($file) : null;
+        }
+        return null;
+    }
+
 }

@@ -140,7 +140,6 @@ class UserController extends Controller
         if(is_null($data)) {
             return $this->response('not_found');
         }
-        $data['profile_image'] = config('filesystems.disks.s3.url') . 'profile_images/'. $data['profile_image'];
         return $this->response('done', $data);
     }
 
