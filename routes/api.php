@@ -13,9 +13,7 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-Route::get('phpinfo', function() {
-  phpinfo();
-});
+
 Route::group(['prefix' => 'auth'], function () {
   Route::post('login', 'AuthController@login');
   Route::post('register', 'AuthController@register');
@@ -98,8 +96,17 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
       Route::delete('/{id}', ['middleware' => ['can:delete_bill'], 'uses' => 'BillController@remove']);
     });
 
+    Route::group(['prefix' => 'daily-closings'], function () {
+      Route::get('/', ['middleware' => ['can:read_daily_closing'], 'uses' => 'DailyClosingController@all']);
+      Route::get('/{id}', ['middleware' => ['can:read_daily_closing'], 'uses' => 'DailyClosingController@get']);
+
+      Route::post('/', ['middleware' => ['can:create_daily_closing'], 'uses' => 'DailyClosingController@add']);
+      Route::put('/{id}', ['middleware' => ['can:update_daily_closing'], 'uses' => 'DailyClosingController@put']);
+      Route::delete('/{id}', ['middleware' => ['can:delete_daily_closing'], 'uses' => 'DailyClosingController@remove']);
+    });
 
     Route::get('/options/{object}', ['middleware' => ['auth:sanctum'], 'uses' => 'OptionController@get']);
+    Route::get('/options', ['middleware' => ['auth:sanctum'], 'uses' => 'OptionController@getMultiple']);
 
   });
 });

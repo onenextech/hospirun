@@ -11,6 +11,7 @@ class DailyClosing extends BaseModel
      * @var array
      */
     protected $fillable = [
+        'date',
         'opening_balance',
         'deposit_total',
         'bill_total',
@@ -21,6 +22,7 @@ class DailyClosing extends BaseModel
     ];
 
     protected $casts = [
+        'date' => 'date:Y-m-d',
         'opening_balance' => 'double',
         'deposit_total' => 'double',
         'bill_total' => 'double',

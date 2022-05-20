@@ -5,9 +5,6 @@ use Illuminate\Http\Request;
 use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Intervention\Image\Facades\Image;
 
 class CategoryController extends Controller
 {
@@ -208,7 +205,7 @@ class CategoryController extends Controller
             'type' => 'string|max:255',
         ]);
 
-        $newData = $request->only(['name', 'type', 'description']);
+        $newData = $request->only(['name', 'description', 'type' ]);
 
         DB::beginTransaction();
 

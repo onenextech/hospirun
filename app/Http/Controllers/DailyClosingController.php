@@ -2,21 +2,18 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
-use App\Models\Item;
+use App\Models\DailyClosing;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Intervention\Image\Facades\Image;
 
-class ItemController extends Controller
+class DailyClosingController extends Controller
 {
 
-    /** Get Item List
+    /** Get DailyClosing List
         * @OA\Get(
-        * path="/api/items",
-        * operationId="itemList",
-        * tags={"Item"},
+        * path="/api/daily-closings",
+        * operationId="dailyClosingList",
+        * tags={"DailyClosing"},
         * summary="List",
         *     @OA\RequestBody(
         *         @OA\MediaType(
@@ -28,8 +25,7 @@ class ItemController extends Controller
         *               @OA\Property(property="page", type="integer"),
         *               @OA\Property(property="sort_by", type="string"),
         *               @OA\Property(property="sort_desc", type="boolean"),
-        *               @OA\Property(property="type", type="string"),
-        *               @OA\Property(property="category_id", type="integer"),
+        *               @OA\Property(property="closing_dates", type="object"),
         *            ),
         *        ),
         *     ),
@@ -64,49 +60,41 @@ class ItemController extends Controller
             $sortOrder = "asc";
         }
 
-        // filters
-        $type = $request->input('type');
-        $categoryId = $request->input('category_id');
+        $closingDates = $request->input('closing_dates');
 
         $skip = ($page-1) * $perPage;
 
-        $records = Item::where(function ($query) use($type) {
-            if($type !== null) {
-                $query->where('type', $type);
-            }
-        })
-        ->where(function ($query) use($categoryId) {
-            if($categoryId !== null) {
-                $query->where('category_id', $categoryId);
+        $records = DailyClosing::where(function ($query) use($closingDates) {
+            if($closingDates !== null) {
+                $from = $closingDates['from'];
+                $to = $closingDates['to'];
+                $query->whereBetween('date', [$from, $to]);
             }
         })
         ->where(function ($query) use($q) {
             if($q !== "") {
-                $query->where('name', 'like', "%{$q}%");
+                $query->where('remark', 'like', "%{$q}%");
             }
         })
         ->orderBy($sortBy, $sortOrder)
         ->skip($skip)->take($perPage)
         ->get();
 
-        $total = Item::where(function ($query) use($type) {
-            if($type !== null) {
-                $query->where('type', $type);
-            }
-        })
-        ->where(function ($query) use($categoryId) {
-            if($categoryId !== null) {
-                $query->where('category_id', $categoryId);
+        $total = DailyClosing::where(function ($query) use($closingDates) {
+            if($closingDates !== null) {
+                $from = $closingDates['from'];
+                $to = $closingDates['to'];
+                $query->whereBetween('date', [$from, $to]);
             }
         })
         ->where(function ($query) use($q) {
             if($q !== "") {
-                $query->where('name', 'like', "%{$q}%");
+                $query->where('remark', 'like', "%{$q}%");
             }
         })
         ->get()->count();
 
-        $data['items'] = $records;
+        $data['daily_closings'] = $records;
         $data['total'] = $total;
 
         if(!count($data)){
@@ -115,11 +103,11 @@ class ItemController extends Controller
         return $this->response('done', $data);
     }
 
-    /** Get Item
+    /** Get DailyClosing
         * @OA\Get(
-        * path="/api/items/{id}",
-        * operationId="itemGet",
-        * tags={"Item"},
+        * path="/api/daily_closings/{id}",
+        * operationId="dailyClosingGet",
+        * tags={"DailyClosing"},
         * summary="Get",
         *     @OA\Parameter(
         *       in="path",
@@ -135,30 +123,32 @@ class ItemController extends Controller
     */
     public function get($id)
     {
-        $data = Item::find($id);
+        $data = DailyClosing::find($id);
         if(is_null($data)) {
             return $this->response('not_found');
         }
         return $this->response('done', $data);
     }
 
-    /** Create Item
+    /** Create DailyClosing
         * @OA\Post(
-        * path="/api/items",
-        * operationId="itemCreate",
-        * tags={"Item"},
+        * path="/api/daily_closings",
+        * operationId="dailyClosingCreate",
+        * tags={"DailyClosing"},
         * summary="Create",
         *     @OA\RequestBody(
         *         @OA\MediaType(
         *            mediaType="application/json",
         *            @OA\Schema(
-        *               required={"name", "category_id", "unit_id", "charge", "type"},
-        *               @OA\Property(property="sku", type="string"),
-        *               @OA\Property(property="name", type="string"),
-        *               @OA\Property(property="charge", type="number"),
-        *               @OA\Property(property="category_id", type="integer"),
-        *               @OA\Property(property="unit_id", type="integer"),
-        *               @OA\Property(property="type", type="string"),
+        *               required={"date", "opening_balance", "deposit_total", "bill_total", "grand_total", "actual_amount", "adjusted_amount" },
+        *               @OA\Property(property="date", type="string"),
+        *               @OA\Property(property="opening_balance", type="number"),
+        *               @OA\Property(property="deposit_total", type="number"),
+        *               @OA\Property(property="bill_total", type="number"),
+        *               @OA\Property(property="grand_total", type="number"),
+        *               @OA\Property(property="actual_amount", type="number"),
+        *               @OA\Property(property="adjusted_amount", type="number"),
+        *               @OA\Property(property="remark", type="string"),
         *            ),
         *        ),
         *     ),
@@ -172,18 +162,20 @@ class ItemController extends Controller
     {
         //validate incoming request
         $this->validate($request, [
-            'sku' => 'nullable|string|max:255',
-            'name' => 'required|string|max:255',
-            'charge' => 'required|numeric',
-            'category_id' => 'required|integer',
-            'unit_id' => 'required|integer',
-            'type' => 'required|string|max:255',
+            'date' => 'required|string|max:255',
+            'opening_balance' => 'required|numeric',
+            'deposit_total' => 'required|numeric',
+            'bill_total' => 'required|numeric',
+            'grand_total' => 'required|numeric',
+            'actual_amount' => 'required|numeric',
+            'adjusted_amount' => 'required|numeric',
+            'remark' => 'string',
         ]);
 
         try {
-            $data = $request->only(['sku', 'name', 'charge', 'category_id', 'unit_id', 'type']);
+            $data = $request->only(['date', 'opening_balance', 'deposit_total', 'bill_total', 'grand_total', 'actual_amount', 'adjusted_amount', 'remark']);
             $data['created_by'] = Auth::user()->id; // track who is creating this
-            $result = Item::insertGetId($data);
+            $result = DailyClosing::insertGetId($data);
             $data = array('id'=> $result) + $data; //add generated id infront of response data array
         } catch (\Exception $e) {
             //return error message
@@ -194,11 +186,11 @@ class ItemController extends Controller
         return $this->response('created', $data);
     }
 
-    /** Update Item
+    /** Update DailyClosing
         * @OA\Put(
-        * path="/api/items/{id}",
-        * operationId="itemUpdate",
-        * tags={"Item"},
+        * path="/api/daily_closings/{id}",
+        * operationId="dailyClosingUpdate",
+        * tags={"DailyClosing"},
         * summary="Update",
         *     @OA\Parameter(
         *       in="path",
@@ -210,11 +202,14 @@ class ItemController extends Controller
         *         @OA\MediaType(
         *            mediaType="application/json",
         *            @OA\Schema(
-        *               @OA\Property(property="name", type="string"),
-        *               @OA\Property(property="category_id", type="integer"),
-        *               @OA\Property(property="unit_id", type="integer"),
-        *               @OA\Property(property="charge", type="number"),
-        *               @OA\Property(property="type", type="string"),
+        *               @OA\Property(property="date", type="string"),
+        *               @OA\Property(property="opening_balance", type="number"),
+        *               @OA\Property(property="deposit_total", type="number"),
+        *               @OA\Property(property="bill_total", type="number"),
+        *               @OA\Property(property="grand_total", type="number"),
+        *               @OA\Property(property="actual_amount", type="number"),
+        *               @OA\Property(property="adjusted_amount", type="number"),
+        *               @OA\Property(property="remark", type="string"),
         *            ),
         *        ),
         *     ),
@@ -227,19 +222,23 @@ class ItemController extends Controller
     public function put($id, Request $request)
     {
         $this->validate($request, [
-            'name' => 'string|max:255',
-            'category_id' => 'integer',
-            'unit_id' => 'integer',
-            'type' => 'string|max:255',
-            'charge' => 'numeric',
+            'date' => 'string|max:255',
+            'opening_balance' => 'numeric',
+            'deposit_total' => 'numeric',
+            'bill_total' => 'numeric',
+            'grand_total' => 'numeric',
+            'actual_amount' => 'numeric',
+            'adjusted_amount' => 'numeric',
+            'remark' => 'string',
         ]);
 
-        $newData = $request->only(['sku', 'name', 'charge', 'category_id', 'unit_id', 'type']);
+        $newData = $request->only(['date', 'opening_balance', 'deposit_total', 'bill_total', 'grand_total', 'actual_amount', 'adjusted_amount', 'remark']);
 
         DB::beginTransaction();
 
         try {
-            $data = Item::find($id);
+
+            $data = DailyClosing::find($id);
             if(is_null($data)) {
                 return $this->response('not_found');
             }
@@ -250,7 +249,7 @@ class ItemController extends Controller
             $data->update($newData);
             DB::commit();
         }
-        catch (\Exception $e) {
+        catch(\Exception $e) {
             DB::rollBack();
             //return error message
             return $this->response('not_valid', $e);
@@ -259,11 +258,11 @@ class ItemController extends Controller
         return $this->response('done', $data);
     }
 
-    /** Delete Item
+    /** Delete DailyClosing
         * @OA\Delete(
-        * path="/api/items/{id}",
-        * operationId="itemDelete",
-        * tags={"Item"},
+        * path="/api/daily_closings/{id}",
+        * operationId="dailyClosingDelete",
+        * tags={"DailyClosing"},
         * summary="Delete",
         *     @OA\Parameter(
         *       in="path",
@@ -279,7 +278,7 @@ class ItemController extends Controller
     */
     public function remove($id)
     {
-        $data = Item::find($id);
+        $data = DailyClosing::find($id);
         if(is_null($data)) {
             return $this->response('not_found');
         }

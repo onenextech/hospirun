@@ -11,6 +11,7 @@ class Item extends BaseModel
      * @var array
      */
     protected $fillable = [
+        'sku',
         'name',
         'category_id',
         'category_name',

@@ -59,9 +59,6 @@ class UnitController extends Controller
             $sortOrder = "asc";
         }
 
-        // filters
-        $type = $request->input('type');
-
         $skip = ($page-1) * $perPage;
 
         $records = Unit::where(function ($query) use($q) {

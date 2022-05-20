@@ -28,6 +28,8 @@ class PatientController extends Controller
         *               @OA\Property(property="page", type="integer"),
         *               @OA\Property(property="sort_by", type="string"),
         *               @OA\Property(property="sort_desc", type="boolean"),
+        *               @OA\Property(property="status", type="string"),
+        *               @OA\Property(property="gender", type="string"),
         *            ),
         *        ),
         *     ),
@@ -62,11 +64,29 @@ class PatientController extends Controller
             $sortOrder = "asc";
         }
 
+        // filters
+        /* Status - Admitted, Discharged, Non-admitted (is) NULL */
+        $status = $request->input('status');
+
+        /* Gender - Male (or) Female */
+        $gender = $request->input('gender');
+
         $skip = ($page-1) * $perPage;
 
-        $records = Patient::where(function ($query) use($q) {
+        $records = Patient::where(function ($query) use($status) {
+            if($status !== null) {
+                $query->where('status', $status);
+            }
+        })
+        ->where(function ($query) use($gender) {
+            if($gender !== null) {
+                $query->where('gender', $gender);
+            }
+        })
+        ->where(function ($query) use($q) {
             if($q !== "") {
                 $query->where('name', 'like', "%{$q}%")
+                ->orWhere('phone', 'like', "%{$q}%")
                 ->orWhere('nrc_number', 'like', "%{$q}%")
                 ->orWhere('cpi_number', 'like', "%{$q}%");
             }
@@ -75,9 +95,20 @@ class PatientController extends Controller
         ->skip($skip)->take($perPage)
         ->get();
 
-        $total = Patient::where(function ($query) use($q) {
+        $total = Patient::where(function ($query) use($status) {
+            if($status !== null) {
+                $query->where('status', $status);
+            }
+        })
+        ->where(function ($query) use($gender) {
+            if($gender !== null) {
+                $query->where('gender', $gender);
+            }
+        })
+        ->where(function ($query) use($q) {
             if($q !== "") {
                 $query->where('name', 'like', "%{$q}%")
+                ->orWhere('phone', 'like', "%{$q}%")
                 ->orWhere('nrc_number', 'like', "%{$q}%")
                 ->orWhere('cpi_number', 'like', "%{$q}%");
             }
@@ -130,7 +161,8 @@ class PatientController extends Controller
         *         @OA\MediaType(
         *            mediaType="application/json",
         *            @OA\Schema(
-        *               required={"name", "type"},
+        *               required={"cpi_number", "name", "type"},
+        *               @OA\Property(property="cpi_number", type="string"),
         *               @OA\Property(property="name", type="string"),
         *               @OA\Property(property="gender", type="string"),
         *               @OA\Property(property="date_of_birth", type="string"),
@@ -152,6 +184,7 @@ class PatientController extends Controller
     {
         //validate incoming request
         $this->validate($request, [
+            'cpi_number' => 'required|string|max:255',
             'name' => 'required|string|max:255',
             'gender' => 'required|in:Male,Female',
             'date_of_birth' => 'required|date|date_format:Y-m-d',
@@ -160,7 +193,7 @@ class PatientController extends Controller
         ]);
 
         try {
-            $data = $request->only(['name', 'gender', 'date_of_birth', 'age', 'address', 'phone', 'blood_group', 'nrc_number']);
+            $data = $request->only(['cpi_number', 'name', 'gender', 'date_of_birth', 'age', 'address', 'phone', 'blood_group', 'nrc_number']);
             $data['created_by'] = Auth::user()->id; // track who is creating this
             $result = Patient::insertGetId($data);
             $data = array('id'=> $result) + $data; //add generated id infront of response data array
@@ -189,6 +222,7 @@ class PatientController extends Controller
         *         @OA\MediaType(
         *            mediaType="application/json",
         *            @OA\Schema(
+        *               @OA\Property(property="cpi_number", type="string"),
         *               @OA\Property(property="name", type="string"),
         *               @OA\Property(property="gender", type="string"),
         *               @OA\Property(property="date_of_birth", type="string"),
@@ -209,6 +243,7 @@ class PatientController extends Controller
     public function put($id, Request $request)
     {
         $this->validate($request, [
+            'cpi_number' => 'string|max:255',
             'name' => 'string|max:255',
             'gender' => 'in:Male,Female',
             'date_of_birth' => 'date|date_format:Y-m-d',
@@ -216,7 +251,7 @@ class PatientController extends Controller
             'nrc_number' => 'string',
         ]);
 
-        $newData = $request->only(['name', 'gender', 'date_of_birth', 'age', 'address', 'phone', 'blood_group', 'nrc_number']);
+        $newData = $request->only(['cpi_number', 'name', 'gender', 'date_of_birth', 'age', 'address', 'phone', 'blood_group', 'nrc_number']);
 
         DB::beginTransaction();
 

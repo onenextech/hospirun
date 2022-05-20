@@ -11,6 +11,7 @@ class Patient extends BaseModel
      * @var array
      */
     protected $fillable = [
+        'cpi_number',
         'name',
         'gender',
         'date_of_birth',
@@ -19,7 +20,6 @@ class Patient extends BaseModel
         'phone',
         'blood_group',
         'nrc_number',
-        'cpi_number',
         'credit_balance',
         'status',
     ];
