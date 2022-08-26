@@ -1,3 +1,5 @@
+# Hospirun
+I started working this project for open source hospital management system. This is backend project. First step is intended to use as minimal system for hospital billing. Then aim to improve to Hospital ERP system. 
 
 # Core System
 Core System includes following essential parts of running the software. It might be extended when new services are extended and developed in future.
